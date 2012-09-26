@@ -48,7 +48,10 @@ func (c *connection) reader() {
 						c.id = connectParts[1]
 						connections[c.id] = c
 
-						c.peer = connections[connectParts[2]]
+						if _,ok := connections[connectParts[2]]; ok {
+							c.peer = connections[connectParts[2]]
+							connections[connectParts[2]].peer = c
+						}
 					}
 				}
 			}
