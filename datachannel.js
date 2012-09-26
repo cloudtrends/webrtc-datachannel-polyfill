@@ -31,8 +31,8 @@
 		this.readyState = "connecting";
 
 		this._webSocket.onopen = function() {
-			this._identify();
 			this.readyState = "open";
+			this._identify();
 		}.bind(this);
 
 		this._webSocket.onmessage = function(msg) {
@@ -62,10 +62,11 @@
 	};
 
 	DataChannel.prototype.send = function(data, onErrorCallback) {
-		this._webSocket.send(data, onErrorCallback);
+		if( this.readyState == 'open' )
+			this._webSocket.send(data, onErrorCallback);
 	};
 
-	webkitPeerConnection00.prototype.createDataChannel = function(label, dataChannelDict) {
+	PeerConnection.prototype.createDataChannel = function(label, dataChannelDict) {
 		var channel = new DataChannel(this);
 
 		if (typeof(this._allDataChannels) == 'undefined') {
@@ -82,7 +83,7 @@
 		setLocalDescription = PeerConnection.prototype.setLocalDescription,
 		setRemoteDescription = PeerConnection.prototype.setRemoteDescription;
 
-	webkitPeerConnection00.prototype.setLocalDescription = function(type, description) {
+	PeerConnection.prototype.setLocalDescription = function(type, description) {
 		this._localDescription = description;
 		if (typeof(this._allDataChannels) != 'undefined') {
 			for (var i in this._allDataChannels) {
@@ -92,7 +93,7 @@
 		setLocalDescription.call(this, type, description)
 	};
 
-	webkitPeerConnection00.prototype.setRemoteDescription = function(type, description) {
+	PeerConnection.prototype.setRemoteDescription = function(type, description) {
 		this._remoteDescription = description;
 		if (typeof(this._allDataChannels) != 'undefined') {
 			for (var i in this._allDataChannels) {
@@ -103,3 +104,5 @@
 	};
 
 }());
+
+
