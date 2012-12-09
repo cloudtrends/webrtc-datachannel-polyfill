@@ -30,47 +30,46 @@ func (c *connection) reader() {
 		var message string
 		err := websocket.Message.Receive(c.ws, &message)
 		if err != nil {
+			fmt.Println(err)
 			break
 		}
 
-		fmt.Println(c.id + ".reader(): " + message)
+		fmt.Println("R: " + c.id + " : " + message)
 
-		if (c.peer != nil) {
+		if len(message) > 7 && message[0:8] == "connect:" {
+			 {
+				connectParts := strings.Split(message, ":")
+				if len(connectParts) == 3 {
+					c.id = connectParts[1]
+					connections[c.id] = c
 
-			c.peer.send <- message
-
-		} else {
-
-			if len(message) > 7 {
-				if message[0:8] == "connect:" {
-					connectParts := strings.Split(message, ":")
-					if len(connectParts) == 3 {
-						c.id = connectParts[1]
-						connections[c.id] = c
-
-						if _,ok := connections[connectParts[2]]; ok {
-							c.peer = connections[connectParts[2]]
-							connections[connectParts[2]].peer = c
-						}
+					if _,ok := connections[connectParts[2]]; ok {
+						c.peer = connections[connectParts[2]]
+						connections[connectParts[2]].peer = c
 					}
 				}
 			}
+		} else if (c.peer != nil) {
+
+			c.peer.send <- message
 
 		}
 
 	}
+	fmt.Println("R: Connection lost:" + c.id)
 	c.ws.Close()
 }
 
 func (c *connection) writer() {
 	for {
 		message := <- c.send
-		fmt.Println(c.id + ".writer(): " + message)
+		fmt.Println("W: " + c.id + " : " + message)
 		err := websocket.Message.Send(c.ws, message)
 		if err != nil {
 			break
 		}
 	}
+	fmt.Println("W: Connection lost:" + c.id)
 	c.ws.Close()
 }
 
@@ -80,6 +79,8 @@ func (c *connection) writer() {
 
 func wsHandler(ws *websocket.Conn) {
 	fmt.Println("NEW WEBSOCKET!");
+	fmt.Println(ws.Config())
+	fmt.Println(ws.RemoteAddr())
 	c := &connection{send: make(chan string, 256), ws: ws}
 	go c.writer()
 	c.reader()
