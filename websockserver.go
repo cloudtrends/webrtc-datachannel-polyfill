@@ -56,6 +56,7 @@ func (c *connection) reader() {
 		}
 
 	}
+	c.send <- "disconnect" // Send disconnect to my own writer.
 	fmt.Println("R: Connection lost:" + c.id)
 	c.ws.Close()
 }
@@ -63,6 +64,9 @@ func (c *connection) reader() {
 func (c *connection) writer() {
 	for {
 		message := <- c.send
+		if message == "disconnect" {
+			break;
+		}
 		fmt.Println("W: " + c.id + " : " + message)
 		err := websocket.Message.Send(c.ws, message)
 		if err != nil {
