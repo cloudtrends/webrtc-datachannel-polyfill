@@ -27,6 +27,9 @@ var connections map[string]*connection = make(map[string]*connection)
 
 func (c *connection) reader() {
 	for {
+
+		fmt.Println(len(connections))
+
 		var message string
 		err := websocket.Message.Receive(c.ws, &message)
 		if err != nil {
@@ -57,6 +60,7 @@ func (c *connection) reader() {
 
 	}
 	c.send <- "disconnect" // Send disconnect to my own writer.
+	delete(connections, c.id) // Remove myself from connection map.
 	fmt.Println("R: Connection lost:" + c.id)
 	c.ws.Close()
 }
