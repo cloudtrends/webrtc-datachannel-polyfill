@@ -1,0 +1,1 @@
+This polyfiller adds DataChannel functionality to your webkitPeerConnection00 / PeerConnection, using Websockets and a backend server made in Go (golang).
